@@ -1,0 +1,304 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<title>Home</title>
+<style type="text/css">
+    .container {
+        margin: 0;
+        padding: 0;
+        max-width: 100vw;
+        min-height: 100vh;
+        color: whitesmoke;
+        text-shadow: 1px 1px rgb(85, 84, 84);
+        background-image: linear-gradient(60deg, rgb(117, 231, 212), rgb(238, 125, 223));
+    }
+
+    header {
+        padding: 10px;
+    }
+
+    header>h1 {
+        text-align: center;
+    }
+
+    .header2 {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .header2>* {
+        margin: 0;
+        padding: 0;
+    }
+
+    .header2>a>button {
+        padding: 10px 20px;
+        background-color: rgb(159, 189, 189);
+        border: 2px solid blueviolet;
+        border-radius: 10px;
+    }
+
+    .header2>a>button:hover {
+        background-color: rgb(178, 124, 228);
+    }
+
+    /* main */
+    main {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    .group {
+        margin: 10px 20px;
+    }
+
+    h2 {
+        margin: 10px 0;
+    }
+
+    .ch-ul {
+        overflow: auto;
+        list-style: circle;
+        list-style-position: inside;
+        height: 300px;
+        width: 320px;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(100, 22, 224, 0.4);
+        font-size: large;
+
+    }
+
+    .ch-ul li {
+        margin: 10px;
+    }
+
+    .ch-ul li a {
+        text-decoration: none;
+        color: rgb(255, 255, 255);
+
+    }
+
+    .ch-li:hover {
+        color: rgb(83, 23, 248);
+    }
+
+    .msg-li {
+        overflow: auto;
+        height: 300px;
+        width: 320px;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(214, 27, 27, 0.4);
+
+    }
+    .msg-li li {
+        overflow: hidden;
+    }    
+    .form-con {
+        margin-top: 20px;
+    }
+
+    form {
+        padding: 10px 0;
+    }
+
+    label {
+        margin: 10px 0;
+
+    }
+
+    input {
+        margin: 10px 0;
+        padding: 5px;
+        border-radius: 5px;
+        height: 25px;
+        border: 2px solid rgba(145, 141, 141, 0.61);
+        outline: none;
+    }
+
+    input:focus {
+        border: 2px solid rgba(61, 60, 60, 0.61);
+    }
+
+    form>button {
+        padding: 10px 22px;
+        border-radius: 10px;
+        background-color: rgb(202, 196, 196);
+        border: 2px solid rgb(37, 177, 25);
+    }
+
+    form>button:hover {
+        background-color: rgb(37, 177, 25);
+    }
+
+    #channel {
+        width: 60%;
+    }
+
+    #private-msg {
+        width: 80%
+    }
+
+    #recipient {
+        width: 40%;
+    }
+
+    .st {
+        font-size: large;
+        font-weight: bold;
+    }
+
+    .me span {
+        float: right;
+        background-color: rgb(54, 172, 54);
+        padding: 5px;
+        margin: 2px;
+        border-radius: 5px;
+    }
+    .others span {
+        float: left;
+        background-color: rgb(55, 55, 224);
+        padding: 5px;
+        margin: 2px;
+        border-radius: 5px;
+    }
+
+    #nouser{
+     text-align: center;
+     margin: 2px;   
+    }
+    #nouser span {
+        background-color: red;
+        padding: 5px;
+        margin: 2px;
+        border-radius: 5px;
+    }
+</style>
+
+
+{% endblock %}
+
+
+{% block body %}
+<div class="container">
+    <header>
+        <h1>Chat Box</h1>
+        <div class="header2">
+            <h4>Welcome, {{name}}</h4>
+            <a href="{{url_for('logout')}}"><button>Logout</button></a>
+        </div>
+    </header>
+    <hr>
+
+    <main>
+
+        <div class="channel group">
+
+            <h2>Channel List</h2>
+
+            {% if message %}
+            <div class="alert alert-info alert-dismissible fade show">{{message}}</div>
+            {% endif %}
+
+            <ul class="ch-ul">
+                {% if channels|length == 0 %}
+                <li id="emptylist">No Channels added yet</li>
+
+                {% endif %}
+
+                {% for ch in channels %}
+                <li><a class="ch-li" href="{{ url_for('recent',ch=ch) }}">{{ch}}</a></li>
+
+                {% endfor %}
+
+            </ul>
+
+            <div class="form-con">
+                <h2>Add Channels</h2>
+
+                <form action="{{url_for('addch')}}" method="post">
+                    <label><b>Enter channel name:</b></label><br>
+                    <input id="channel" type="text" name="channel" placeholder="channel name" autocomplete="off"
+                        required>
+                    <button id="ch-add-btn">Add</button>
+                </form>
+
+            </div>
+        </div>
+
+
+        <div class="private group">
+
+            <h2>Private Chat</h1>
+
+                <ul class="msg-li" id="private-msgs">
+
+                </ul>
+
+                <div class="form-con">
+                    <form id="private-msg-form">
+                        <input id="private-msg" class="form-control" type="text" placeholder="Text to send"
+                            autocomplete="off" required><br>
+                        <label class="st">send to</label>
+                        <input id="recipient" type='text' placeholder="Recipient Name" required>
+                        <button id="msg-send-btn">Send</button>
+                    </form>
+                </div>
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+        socket.on('connect', () => {
+            socket.emit('username', "{{name}}");
+            document.querySelector('#private-msg-form').onsubmit = () => {
+                const message = document.querySelector('#private-msg').value.trim();
+                var recipient = document.querySelector('#recipient').value.trim();
+                socket.emit('send_private_message', {
+                    'sender': "{{name}}",
+                    'message': message,
+                    'recipient': recipient
+                });
+
+                document.querySelector('#private-msg').value = ""
+                return false;
+            };
+        });
+
+        socket.on('receive_private_message', data => {
+            if (data.sender == "{{name}}") {
+                const li0 = document.createElement('li');
+                li0.setAttribute("class", "me");
+                li0.innerHTML = `<span>${data.message}. ${data.timestamp}<span>`;
+                let msg = document.querySelector('#private-msgs')
+                msg.append(li0);
+                msg.scrollBy(0, 100);
+            } else {
+                const li1 = document.createElement('li');
+                li1.setAttribute("class", "others");
+                li1.innerHTML = `<span><b>${data.sender}: </b>${data.message}. ${data.timestamp}<span>`;
+                let msg = document.querySelector('#private-msgs')
+                msg.append(li1);
+                msg.scrollBy(0, 100);
+            }
+        });
+        socket.on('user_not_found', data => {
+            const li2 = document.createElement('li');
+            li2.setAttribute("id", "nouser");
+            li2.innerHTML = `<span>${data} doesn't currently logged in </span>`;
+            let msg = document.querySelector('#private-msgs')
+            msg.append(li2);
+            msg.scrollBy(0, 100);
+        })
+    });
+</script>
+
+{% endblock %}

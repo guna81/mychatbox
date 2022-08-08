@@ -1,0 +1,201 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<title>Channel</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        max-width: 100vw;
+        min-height: 100vh;
+        color: whitesmoke;
+        text-shadow: 1px 1px rgb(85, 84, 84);
+        background-image: linear-gradient(60deg, rgb(117, 231, 212), rgb(238, 125, 223));
+    }
+
+    header {
+        text-align: center;
+        overflow: auto;
+    }
+
+    .back {
+        color: rgb(47, 192, 236);
+        float: left;
+        padding: 10px;
+    }
+
+    .back:hover {
+        color: rgb(180, 173, 173);
+    }
+
+    .logout-btn {
+        float: right;
+        padding: 10px 20px;
+        background-color: rgb(159, 189, 189);
+        border: 2px solid blueviolet;
+        border-radius: 10px;
+    }
+
+    .logout-btn:hover {
+        background-color: rgb(178, 124, 228);
+    }
+
+    main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .messages {
+        overflow: auto;
+        height: 400px;
+        width: 400px;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(206, 29, 182, 0.4);
+    }
+    .messages li {
+        overflow: hidden;
+    }
+    form {
+        margin-bottom: 25px;
+
+    }
+
+    input {
+        padding: 5px;
+        border-radius: 5px;
+        width: 300px;
+        height: 25px;
+        border: 2px solid rgba(145, 141, 141, 0.61);
+        outline: none;
+    }
+
+    input:focus {
+        border: 2px solid rgba(61, 60, 60, 0.61);
+    }
+
+    form>button {
+        padding: 10px 22px;
+        border-radius: 10px;
+        background-color: rgb(202, 196, 196);
+        border: 2px solid rgb(37, 177, 25);
+    }
+
+    form>button:hover {
+        background-color: rgb(37, 177, 25);
+    }
+
+    .me span {
+        float: right;
+        background-color: rgb(54, 172, 54);
+        padding: 10px;
+        margin: 4px;
+        border-radius: 10px;
+    }
+    .others span {
+        float: left;
+        background-color: rgb(55, 55, 224);
+        padding: 10px;
+        margin: 4px;
+        border-radius: 10px;
+    }
+</style>
+
+
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <header>
+        <h1>Chat Box</h1>
+
+        <a class="back" href="{{url_for('remove_recent',ch=channel)}}">Back to Home</a>
+        <a href="{{url_for('logout')}}"><button class="logout-btn">Logout</button></a>
+    </header>
+
+    <hr>
+
+    <main>
+        <h3>Channel: {{channel}}</h3>
+
+        <ul class="messages">
+
+        </ul>
+
+        <form id="msg-form" class="form-row">
+            <input id="msg" class="form-control col-10" type="text" autocomplete="off" autofocus required>
+            <button>Send</button>
+        </form>
+
+    </main>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+        socket.on('connect', () => {
+            socket.emit('join_channel', {
+                'displayname': "{{displayname}}",
+                'channel': "{{channel}}"
+            });
+
+            document.querySelector('#msg-form').onsubmit = () => {
+                const message = document.querySelector('#msg').value.trim();
+                socket.emit('send_message', {
+                    'message': message,
+                    'displayname': "{{displayname}}",
+                    'channel': "{{channel}}"
+                });
+
+                document.querySelector('#msg').value = ""
+                return false;
+            };
+        });
+
+        socket.on('receive_message', data => {
+            if (data['displayname'] == "{{displayname}}") {
+                const li0 = document.createElement('li');
+                li0.setAttribute("class", "me");
+                li0.innerHTML = `<span>${data.message}. ${data.timestamp}</span> `;
+                let msg = document.querySelector('.messages')
+                msg.append(li0);
+                msg.scrollBy(0, 100);
+            } else {
+                const li1 = document.createElement('li');
+                li1.setAttribute("class", "others");
+                li1.innerHTML =
+                    `<span> <b>${data.displayname}: </b>${data.message}. ${data.timestamp}</span> `;
+                let msg = document.querySelector('.messages')
+                msg.append(li1);
+                msg.scrollBy(0, 100);
+            }
+        });
+
+        socket.on('retrive_old_messages', data => {
+            if (data['name'] == "{{displayname}}") {
+                if (data.chat['displayname'] == "{{displayname}}") {
+                    const li2 = document.createElement('li');
+                    li2.setAttribute("class", "me");
+                    li2.innerHTML = `<span>${data.chat['message']}. ${data.chat['timestamp']}</span> `;
+                    let msg = document.querySelector('.messages')
+                    msg.append(li2);
+                    msg.scrollBy(0, 100);
+                } else {
+                    const li3 = document.createElement('li');
+                    li3.setAttribute("class", "others");
+                    li3.innerHTML =
+                        `<span><b>${data.chat['displayname']}: </b>${data.chat['message']}. ${data.chat['timestamp']}</span> `;
+                    let msg = document.querySelector('.messages')
+                    msg.append(li3);
+                    msg.scrollBy(0, 100);
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}
