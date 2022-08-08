@@ -1,2 +1,2 @@
-# ghato
+# Chatmunk
 my chat app
