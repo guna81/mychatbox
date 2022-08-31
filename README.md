@@ -1,2 +1,2 @@
 # Chatmunk
-my chat app
+A Beginner chat app project
