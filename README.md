@@ -1,3 +1,3 @@
-# my chat app
+# my chat box
 
-A beginner chat app project
+A beginner chat app (Web)
